@@ -47,7 +47,7 @@ public class AuthController : ControllerBase
     {
         var user = _context.Users.FirstOrDefault(x => x.Email == loginRequest.Email);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, loginRequest.Password))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
             return Unauthorized("Invalid credentials");
 
         var token = GenerateJwtToken(user);
