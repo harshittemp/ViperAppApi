@@ -25,8 +25,8 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest registerRequest)
     {
-        if (_context.Users.Any(u => u.Email == registerRequest.Email))
-            return BadRequest("User already exists");
+        //if (_context.Users.Any(u => u.Email == registerRequest.Email))
+        //    return BadRequest("User already exists");
 
         var user = new User
         {
@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
         return Ok("User Registered Successfully");
     }
 
-   
+
     [HttpPost("login")]
     public IActionResult Login(LoginRequest loginRequest)
     {

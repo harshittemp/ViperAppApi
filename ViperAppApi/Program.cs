@@ -60,6 +60,8 @@ app.UseCors("AllowAngular");
 
 app.UseAuthorization();
 
+app.UseStaticFiles();
+
 app.MapControllers();
 
 app.Run();
