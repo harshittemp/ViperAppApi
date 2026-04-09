@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ViperAppApi.Data;
+using ViperAppApi.Interfaces;
+using ViperAppApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -29,6 +31,8 @@ builder.Services.AddAuthentication(options =>
 // DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLConnect")));
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<ISocialService, SocialService>();
 
 // Controllers
 builder.Services.AddControllers();
@@ -60,7 +64,10 @@ app.UseCors("AllowAngular");
 
 app.UseAuthorization();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    ServeUnknownFileTypes = true
+});
 
 app.MapControllers();
 

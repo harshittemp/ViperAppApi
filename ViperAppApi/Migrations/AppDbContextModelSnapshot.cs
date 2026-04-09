@@ -22,6 +22,67 @@ namespace ViperAppApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ViperAppApi.Models.Domains.Follow", b =>
+                {
+                    b.Property<long>("FollowId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("FollowId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("FollowerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FollowingId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("FollowId");
+
+                    b.HasIndex("FollowingId");
+
+                    b.HasIndex("FollowerId", "FollowingId")
+                        .IsUnique();
+
+                    b.ToTable("Follows");
+                });
+
+            modelBuilder.Entity("ViperAppApi.Models.Domains.FriendRequest", b =>
+                {
+                    b.Property<long>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("ReceiverId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("SenderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId", "ReceiverId")
+                        .IsUnique();
+
+                    b.ToTable("FriendRequests");
+                });
+
             modelBuilder.Entity("ViperAppApi.Models.Domains.Post", b =>
                 {
                     b.Property<long>("PostID")
@@ -67,6 +128,9 @@ namespace ViperAppApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("UserID"));
 
+                    b.Property<string>("Bio")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -77,12 +141,24 @@ namespace ViperAppApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Linkedin")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Twitter")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Website")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserID");
@@ -90,7 +166,48 @@ namespace ViperAppApi.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ViperAppApi.Models.Domains.Follow", b =>
+                {
+                    b.HasOne("ViperAppApi.Models.Domains.User", "Follower")
+                        .WithMany("Following")
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ViperAppApi.Models.Domains.User", "Following")
+                        .WithMany("Followers")
+                        .HasForeignKey("FollowingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Follower");
+
+                    b.Navigation("Following");
+                });
+
+            modelBuilder.Entity("ViperAppApi.Models.Domains.FriendRequest", b =>
+                {
+                    b.HasOne("ViperAppApi.Models.Domains.User", "Receiver")
+                        .WithMany("ReceivedRequests")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ViperAppApi.Models.Domains.User", "Sender")
+                        .WithMany("SentRequests")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("ViperAppApi.Models.Domains.Post", b =>
@@ -106,7 +223,15 @@ namespace ViperAppApi.Migrations
 
             modelBuilder.Entity("ViperAppApi.Models.Domains.User", b =>
                 {
+                    b.Navigation("Followers");
+
+                    b.Navigation("Following");
+
                     b.Navigation("Posts");
+
+                    b.Navigation("ReceivedRequests");
+
+                    b.Navigation("SentRequests");
                 });
 #pragma warning restore 612, 618
         }

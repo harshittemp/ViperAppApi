@@ -10,19 +10,25 @@ public class Post
 
     public long UserID { get; set; }
 
-    public string? Content { get; set; }
+    public string Content { get; set; } = string.Empty;
 
-    public string? ImageUrl { get; set; }
+    public string? MediaUrl { get; set; }  // URL for image or video
 
-    public string? VideoUrl { get; set; }
+    public string? MediaType { get; set; }  // "image", "video", or null for text-only
 
-    public string PostType { get; set; } // "image", "video", "text"
+    public int LikesCount { get; set; } = 0;
+
+    public int CommentsCount { get; set; } = 0;
+
+    public int SharesCount { get; set; } = 0;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public string? CreatedBy { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
-    // Navigation
     [ForeignKey("UserID")]
-    public User User { get; set; }
+    public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+    //public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

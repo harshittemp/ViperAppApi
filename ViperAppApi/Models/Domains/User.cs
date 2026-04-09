@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ViperAppApi.Models.Domains;
 
@@ -26,6 +27,21 @@ public class User
     public string? Twitter { get; set; }
     public string? ProfileImage { get; set; }
 
-    // Navigation - FIXED TYPO
+    // Navigation 
     public ICollection<Post> Posts { get; set; } = new List<Post>();
+    // Users that this user follows
+    [InverseProperty("Follower")]
+    public ICollection<Follow> Following { get; set; } = new List<Follow>();
+
+    // Users that follow this user
+    [InverseProperty("Following")]
+    public ICollection<Follow> Followers { get; set; } = new List<Follow>();
+
+    // Friend requests sent by this user
+    [InverseProperty("Sender")]
+    public ICollection<FriendRequest> SentRequests { get; set; } = new List<FriendRequest>();
+
+    // Friend requests received by this user
+    [InverseProperty("Receiver")]
+    public ICollection<FriendRequest> ReceivedRequests { get; set; } = new List<FriendRequest>();
 }
