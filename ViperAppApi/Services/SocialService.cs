@@ -32,7 +32,7 @@ namespace ViperAppApi.Services
                 {
                     UserID = u.UserID,
                     UserName = u.UserName,
-                    ProfileImage = u.ProfileImage,
+                    ProfileImageUrl = u.ProfileImage,
                     Bio = u.Bio,
                     FollowersCount = _context.Follows.Count(f => f.FollowingId == u.UserID),
                     FollowingCount = _context.Follows.Count(f => f.FollowerId == u.UserID),
@@ -61,7 +61,7 @@ namespace ViperAppApi.Services
                 {
                     UserID = u.UserID,
                     UserName = u.UserName,
-                    ProfileImage = u.ProfileImage,
+                    ProfileImageUrl = u.ProfileImage,
                     Bio = u.Bio,
                     FollowersCount = _context.Follows.Count(f => f.FollowingId == u.UserID),
                     FollowingCount = _context.Follows.Count(f => f.FollowerId == u.UserID),
@@ -256,7 +256,7 @@ namespace ViperAppApi.Services
                 {
                     UserID = f.Follower.UserID,
                     UserName = f.Follower.UserName,
-                    ProfileImage = f.Follower.ProfileImage,
+                    ProfileImageUrl = f.Follower.ProfileImage,
                     Bio = f.Follower.Bio,
                     // ✅ Fixed: Use direct expressions
                     IsFollowing = _context.Follows.Any(fol => fol.FollowerId == currentUserId && fol.FollowingId == f.Follower.UserID),
@@ -278,7 +278,7 @@ namespace ViperAppApi.Services
                 {
                     UserID = f.Following.UserID,
                     UserName = f.Following.UserName,
-                    ProfileImage = f.Following.ProfileImage,
+                    ProfileImageUrl = f.Following.ProfileImage,
                     Bio = f.Following.Bio,
                     IsFollowing = true,
                     // ✅ Fixed: Use direct expressions

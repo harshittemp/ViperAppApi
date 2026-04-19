@@ -4,7 +4,8 @@ public class UserDto
 {
     public long UserID { get; set; }
     public string UserName { get; set; } = string.Empty;
-    public string? ProfileImage { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public bool HasProfileImage { get; set; }
     public string? Bio { get; set; }
     public bool IsFollowing { get; set; }
     public bool IsFriend { get; set; }

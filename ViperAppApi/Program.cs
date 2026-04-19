@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ViperAppApi.Data;
@@ -45,13 +46,13 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
-// ✅ Add Swagger
+// Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ✅ Enable Swagger UI
+// Enable Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -62,12 +63,28 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAngular");
 
-app.UseAuthorization();
+// ✅ IMPORTANT: Static files configuration - ORDER MATTERS!
+app.UseStaticFiles(); // This serves files from wwwroot root
+
+// Serve images from specific folders
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images")),
+    RequestPath = "/images",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "image/jpeg"
+});
 
 app.UseStaticFiles(new StaticFileOptions
 {
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")),
+    RequestPath = "/uploads",
     ServeUnknownFileTypes = true
 });
+
+app.UseAuthorization();
 
 app.MapControllers();
 
