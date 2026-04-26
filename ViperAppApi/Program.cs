@@ -64,7 +64,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
 
 // ✅ IMPORTANT: Static files configuration - ORDER MATTERS!
-app.UseStaticFiles(); // This serves files from wwwroot root
+app.UseStaticFiles();  // This serves files from wwwroot root
 
 // Serve images from specific folders
 app.UseStaticFiles(new StaticFileOptions

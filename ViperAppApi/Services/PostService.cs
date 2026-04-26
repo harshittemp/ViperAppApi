@@ -127,13 +127,22 @@ public class PostService
         return post;
     }
 
-    public async Task<(bool success, string message, int likesCount)> LikePost(long postId, long userId)
+    public async Task<(bool success, string message, int likesCount, bool liked)> LikePost(long postId, long userId)
     {
         var existingLike = await _context.PostLikes
             .FirstOrDefaultAsync(pl => pl.PostID == postId && pl.UserID == userId);
 
         if (existingLike != null)
-            return (false, "Already liked", 0);
+        {
+            // User already liked, so unlike
+            _context.PostLikes.Remove(existingLike);
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null && post.LikesCount > 0)
+                post.LikesCount--;
+
+            await _context.SaveChangesAsync();
+            return (true, "Post unliked", post?.LikesCount ?? 0, false);
+        }
 
         var like = new PostLike
         {
@@ -144,22 +153,22 @@ public class PostService
 
         _context.PostLikes.Add(like);
 
-        var post = await _context.Posts.FindAsync(postId);
-        if (post != null)
-            post.LikesCount++;
+        var postToUpdate = await _context.Posts.FindAsync(postId);
+        if (postToUpdate != null)
+            postToUpdate.LikesCount++;
 
         await _context.SaveChangesAsync();
 
-        return (true, "Post liked", post?.LikesCount ?? 0);
+        return (true, "Post liked", postToUpdate?.LikesCount ?? 0, true);
     }
 
-    public async Task<(bool success, string message, int likesCount)> UnlikePost(long postId, long userId)
+    public async Task<(bool success, string message, int likesCount, bool liked)> UnlikePost(long postId, long userId)
     {
         var like = await _context.PostLikes
             .FirstOrDefaultAsync(pl => pl.PostID == postId && pl.UserID == userId);
 
         if (like == null)
-            return (false, "Not liked yet", 0);
+            return (false, "Not liked yet", 0, false);
 
         _context.PostLikes.Remove(like);
 
@@ -169,7 +178,7 @@ public class PostService
 
         await _context.SaveChangesAsync();
 
-        return (true, "Post unliked", post?.LikesCount ?? 0);
+        return (true, "Post unliked", post?.LikesCount ?? 0, false);
     }
 
     public async Task<bool> DeletePost(long postId, long userId)
@@ -260,5 +269,97 @@ public class PostService
             _logger.LogError(ex, "Error saving media");
             return (false, "", "", ex.Message);
         }
+    }
+
+    public async Task<List<CommentDto>> GetComments(long postId)
+    {
+        return await _context.Comments
+            .Include(c => c.User)
+            .Where(c => c.PostID == postId && !c.IsDeleted)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new CommentDto
+            {
+                CommentID = c.CommentID,
+                PostID = c.PostID,
+                UserID = c.UserID,
+                UserName = c.User.UserName,
+                Content = c.Content,
+                LikesCount = c.LikesCount,
+                CreatedAt = c.CreatedAt,
+                IsDeleted = c.IsDeleted
+            })
+            .ToListAsync();
+    }
+
+    public async Task<CommentDto> AddComment(long postId, long userId, string content)
+    {
+        // Check if post exists
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+            throw new Exception("Post not found");
+
+        var comment = new Comment
+        {
+            PostID = postId,
+            UserID = userId,
+            Content = content,
+            CreatedAt = DateTime.UtcNow,
+            LikesCount = 0,
+            IsDeleted = false
+        };
+
+        _context.Comments.Add(comment);
+
+        // Update post comments count
+        post.CommentsCount++;
+
+        await _context.SaveChangesAsync();
+
+        // Get user info
+        var user = await _context.Users.FindAsync(userId);
+
+        return new CommentDto
+        {
+            CommentID = comment.CommentID,
+            PostID = comment.PostID,
+            UserID = comment.UserID,
+            UserName = user?.UserName ?? "User",
+            Content = comment.Content,
+            LikesCount = comment.LikesCount,
+            CreatedAt = comment.CreatedAt,
+            IsDeleted = comment.IsDeleted
+        };
+    }
+
+    public async Task<bool> DeleteComment(long commentId, long userId)
+    {
+        var comment = await _context.Comments
+            .FirstOrDefaultAsync(c => c.CommentID == commentId && c.UserID == userId);
+
+        if (comment == null)
+            return false;
+
+        // Soft delete
+        comment.IsDeleted = true;
+
+        // Update post comments count
+        var post = await _context.Posts.FindAsync(comment.PostID);
+        if (post != null && post.CommentsCount > 0)
+            post.CommentsCount--;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<(bool success, int sharesCount)> SharePost(long postId, long userId)
+    {
+        var post = await _context.Posts.FindAsync(postId);
+        if (post == null)
+            return (false, 0);
+
+        post.SharesCount++;
+        await _context.SaveChangesAsync();
+
+        return (true, post.SharesCount);
     }
 }
